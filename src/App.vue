@@ -1,13 +1,14 @@
 <template>
   <div id="app">
-    <StyleEditor></StyleEditor>
-    <ResumeEditor></ResumeEditor>
+    <StyleEditor ref="styleEditor" :code="currentStyle"></StyleEditor>
+    <ResumeEditor :markdown="currentMarkdown" :enableHtml="enableHtml" ref="resumeEditor"></ResumeEditor>
   </div>
 </template>
 
 <script>
 import StyleEditor from './components/StyleEditor'
 import ResumeEditor from './components/ResumeEditor'
+import './assets/reset.css'
 
 export default {
   name: 'app',
@@ -66,14 +67,13 @@ html{
   overflow: auto;
 }
 /* 好了，我开始写简历了 */`,
-          `
+        `
 /* 这个简历好像差点什么
  * 对了，这是 Markdown 格式的，我需要变成对 HR 更友好的格式
  * 简单，用开源工具翻译成 HTML 就行了
  */
-`
-          ,
-          `
+`,
+        `
 /* 再对 HTML 加点样式 */
 .resumeEditor{
   padding: 2em;
@@ -103,38 +103,107 @@ html{
   padding: .5em;
   background: #ddd;
 }
-`]，
+`],
       currentMarkdown: '',
       fullMarkdown: `岳铭飞
 ----
+* 年龄 26
+* 籍贯 河北
+* 电话 15600109959
 
+求职意愿
+----
 web前端工程师
+
 
 技能
 ----
 
-* 前端开发
-* Rails 开发
-* Node.js 开发
-* 前端授课
+* html+css+javascript(包括es5和es6)
+* bootstrap
+* jQuery vueJS
+* ajax json
+* webpack
 
 工作经历
 ----
 
-1. [饥人谷](http://jirengu.com)
-2. 腾讯即时通讯平台部
-3. 阿里巴巴B2B部门
-4. 彩程知人项目组
+中测新图（北京）遥感技术有限责任公司
+——航空遥感技术国家测绘地理信息局重点实验室
+——地理信息应用研究中心
+——web前端开发
 
-链接
-----
-
-* [GitHub](https://github.com/frankfang)
-* [我的文章](https://www.zhihu.com/people/zhihusucks/pins/posts)
 
 > 如果你喜欢这个效果，Fork [我的项目](https://github.com/MurphyYue/MurphyYue.github.io)，打造你自己的简历！
 
 `
+    }
+  },
+  created() {
+    this.makeResume()
+  },
+  methods: {
+    makeResume: async function () {
+      await this.progressivelyShowStyle(0)
+      await this.progressivelyShowResume()
+      await this.progressivelyShowStyle(1)
+      await this.showHtml()
+      await this.progressivelyShowStyle(2)
+    },
+    showHtml: function () {
+      return new Promise((resolve, reject) => {
+        this.enableHtml = true
+        resolve()
+      })
+    },
+    progressivelyShowStyle(n) {
+      return new Promise((resolve, reject) => {
+        console.log(n)
+        let interval = this.interval
+        let showStyle = (async function () {
+          let style = this.fullStyle[n]
+          if (!style) { return }
+          // 计算前 n 个style 的字符总数
+          let length = this.fullStyle.filter((_, index) => index <= n).map((item) => item.length).reduce((a, c) => a + c, 0)
+          // 计算前 n-1 个style 的字符总数
+          let preLength = length - this.fullStyle[n].length
+          if (this.currentStyle.length < length) {
+            let l = this.currentStyle.length - preLength.length
+            let char = style.substring(l, l + 1) || ' '
+            this.currentStyle += char
+            if (style.substring(l - 1, l) === '\n' && this.refs.styleEditor) {
+              this.$nextTick(() => {
+                this.$refs.styleEditor.goBottom()
+              })
+            }
+            setTimeout(showStyle, interval)
+          } else {
+            resolve()
+          }
+        }).bind(this)
+        showStyle()
+      })
+    },
+    progressivelyShowResume() {
+      return new Promise((resolve, reject) => {
+        let length = this.fullMarkdown.length
+        let interval = this.interval
+        let showResum = () => {
+          if (this.currentMarkdown.length < length) {
+            this.currentMarkdown += this.fullMarkdown.substring(0, this.currentMarkdown.length + 1)
+            let preLast = this.currentMarkdown[this.currentMarkdown.length - 2]
+            if (preLast === '/n' && this.$refs.resumeEditor) {
+              this.$nextTick(() => {
+                this.$refs.resumeEditor.goBottom()
+              })
+            }
+            setTimeout(showResum, interval)
+          } else {
+            resolve()
+          }
+        }
+        showResum()
+      })
     }
   },
   components: {
