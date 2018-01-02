@@ -2,9 +2,7 @@ import Vue from 'vue'
 import App from './App'
 import Mobile from './Mobile'
 
-Vue.config.productionTip = false
 var width = document.documentElement.clientWidth
-
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

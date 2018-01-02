@@ -1,14 +1,14 @@
 <template>
 	<div class='styleEditor' ref='container'>
 		<div class="code" v-html="codeInStyleTag"></div>
-		<div class="" v-html="highlightedCode"></div>
+		<pre class="" v-html="highlightedCode"></pre>
 	</div>
 </template>
 
 <script type="text/ecmascript-6">
   import Prism from 'prismjs'
   export default {
-    name: 'editor',
+    name: 'Editor',
     props: ['code'],
     computed: {
       highlightedCode: function () {
@@ -20,10 +20,11 @@
     },
     methods: {
       goBottom() {
-        this.refs.container.scrollTop = 10000
+        this.$refs.container.scrollTop = 100000
       }
     }
   }
+
 </script>
 
 <style scoped>

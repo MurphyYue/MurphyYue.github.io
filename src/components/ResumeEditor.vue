@@ -1,15 +1,15 @@
 <template>
-	<div class="resumeEditor" :class="{htmlMode:enableHtml}" ref='container'>
-		<div v-if='enableHtml' v-html='result'></div>
-    <pre v-else>{result}</pre>
-	</div>
+  <div class="resumeEditor" :class="{htmlMode:enableHtml}" ref="container">
+    <div v-if="enableHtml" v-html="result"></div>
+    <pre v-else>{{result}}</pre>
+  </div>
 </template>
 
-<script type="text/ecmascript-6">
+<script>
   import marked from 'marked'
   export default {
-    name: 'resumeEditor',
     props: ['markdown', 'enableHtml'],
+    name: 'ResumeEditor',
     computed: {
       result: function () {
         return this.enableHtml ? marked(this.markdown) : this.markdown
@@ -17,13 +17,14 @@
     },
     methods: {
       goBottom: function () {
-        this.refs.container.scrollTop = 10000
+        this.$refs.container.scrollTop = 100000
       },
-      goTop: function () {
-        this.refs.container.scrollTop = 0
+      goTop: function(){
+        this.$refs.container.scrollTop = 0
       }
     }
   }
+
 </script>
 
 <style scoped>

@@ -8,6 +8,7 @@
 <script>
 import StyleEditor from './components/StyleEditor'
 import ResumeEditor from './components/ResumeEditor'
+import './assets/reset.css'
 
 export default {
   name: 'app',
@@ -17,7 +18,8 @@ export default {
       currentStyle: '',
       enableHtml: false,
       fullStyle: [
-        `/* 大家好，我是岳铭飞
+        `/* 
+* 大家好，我是岳铭飞
 * 年底了，想换个新环境
 * 先写一份简历吧！
 */
@@ -34,9 +36,13 @@ html {
 .styleEditor {
   padding: .5em;
   border: 1px solid;
-  margin: .5em;
+  margin: 2.5vh 5vw;
   overflow: auto;
-  width: 45vw; height: 90vh;
+  width: 90vw; height: 90vh;
+}
+/*太高了吧，低点儿*/
+.styleEditor {
+  height: 45vh;
 }
 /* 代码高亮 */
 .token.selector{ color: rgb(133,153,0); }
@@ -50,22 +56,22 @@ html{
 }
 .styleEditor {
   position: fixed; left: 0; top: 0;
-  -webkit-transition: none;
-  transition: none;
-  -webkit-transform: rotateY(10deg) translateZ(-100px) ;
-          transform: rotateY(10deg) translateZ(-100px) ;
+  transform: rotateX(-10deg) translateZ(-50px) ;
 }
 
 /* 接下来我给自己准备一个编辑器 */
 .resumeEditor{
-  position: fixed; right: 0; top: 0;
-  padding: .5em;  margin: .5em;
-  width: 48vw; height: 90vh;
+  position: fixed; left: 0; top: 50vh;
+  padding: .5em;  margin: 2.5vh;
+  width: 95vw; height: 45vh;
   border: 1px solid;
   background: white; color: #222;
   overflow: auto;
 }
-/* 好了，我开始写简历了 */`,
+/* 好了，我开始写简历了 */
+
+
+`,
         `
 /* 这个简历好像差点什么
  * 对了，这是 Markdown 格式的，我需要变成对 HR 更友好的格式
@@ -106,6 +112,7 @@ html{
       currentMarkdown: '',
       fullMarkdown: `岳铭飞
 ----
+
 * 年龄 26
 * 籍贯 河北
 * 电话 15600109959
@@ -128,8 +135,6 @@ web前端工程师
 ----
 
 中测新图（北京）遥感技术有限责任公司
-——航空遥感技术国家测绘地理信息局重点实验室
-——地理信息应用研究中心
 ——web前端开发
 
 
@@ -152,23 +157,24 @@ web前端工程师
     showHtml: function () {
       return new Promise((resolve, reject) => {
         this.enableHtml = true
+        resolve()
       })
     },
     progressivelyShowStyle(n) {
       return new Promise((resolve, reject) => {
         let interval = this.interval
-        let showStyle = async function () {
+        let showStyle = (async function () {
           let style = this.fullStyle[n]
           if (!style) { return }
           // 计算前 n 个style 的字符总数
           let length = this.fullStyle.filter((_, index) => index <= n).map((item) => item.length).reduce((a, c) => a + c, 0)
           // 计算前 n-1 个style 的字符总数
-          let preLength = length - this.fullStyle[n].length
+          let preLength = length - style.length
           if (this.currentStyle.length < length) {
-            let l = this.currentStyle.length - preLength.length
+            let l = this.currentStyle.length - preLength
             let char = style.substring(l, l + 1) || ' '
             this.currentStyle += char
-            if (style.substring(l - 1, l) === '\n' && this.refs.styleEditor) {
+            if (style.substring(l - 1, l) === '\n' && this.$refs.styleEditor) {
               this.$nextTick(() => {
                 this.$refs.styleEditor.goBottom()
               })
@@ -177,35 +183,33 @@ web前端工程师
           } else {
             resolve()
           }
-        }.bind(this)
+        }).bind(this)
         showStyle()
       })
     },
     progressivelyShowResume() {
       return new Promise((resolve, reject) => {
-        let length = this.fullMarkdown.length
-        let interval = this.interval
-        let showResum = () => {
-          if (this.currentMarkdown.length < length) {
-            this.currentMarkdown += this.fullMarkdown.substring(0, this.currentMarkdown.length + 1)
-            let preLast = this.currentMarkdown[this.currentMarkdown.length - 2]
-            if (preLast === '/n' && this.$refs.resumeEditor) {
-              this.$nextTick(() => {
-                this.$refs.resumeEditor.goBottom()
-              })
+          let length = this.fullMarkdown.length
+          let interval = this.interval
+          let showResume = () => {
+            if (this.currentMarkdown.length < length) {
+              this.currentMarkdown = this.fullMarkdown.substring(0, this.currentMarkdown.length + 1)
+              let prevChar = this.currentMarkdown[this.currentMarkdown.length - 2]
+              if (prevChar === '\n' && this.$refs.resumeEditor) {
+                this.$nextTick(() => this.$refs.resumeEditor.goBottom())
+              }
+              setTimeout(showResume, interval)
+            } else {
+              resolve()
             }
-            setTimeout(showResum, interval)
-          } else {
-            resolve()
           }
-        }
-        showResum()
-      })
+          showResume()
+        })
     }
   },
   components: {
-    ResumeEditor,
-    StyleEditor
+    StyleEditor,
+    ResumeEditor
   }
 }
 </script>
